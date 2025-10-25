@@ -3,488 +3,487 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FlashQuiz — Flashcard, Quiz, Tracciamento</title>
+  <title>HSB Trainer — Flashcard e Quiz</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    :root { --ring: 0 0 0 3px rgba(59,130,246,.3); }
-    .btn{ display:inline-flex;align-items:center;justify-content:center;border:1px solid #0f172a;border-radius:12px;padding:.5rem .75rem;font-weight:600;font-size:14px;color:#fff;background:#0f172a }
-    .btn:hover{ background:#111827 }
-    .btn:disabled{ opacity:.5;cursor:not-allowed }
-    .btn-secondary{ display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;border-radius:12px;padding:.5rem .75rem;font-weight:600;font-size:14px;background:#fff }
-    .btn-secondary:hover{ background:#f8fafc }
-    .icon-btn{ border:1px solid #cbd5e1;border-radius:10px;padding:.25rem .5rem;font-size:14px }
-    .icon-btn:hover{ background:#f8fafc }
-    .tab{ display:inline-flex;align-items:center;border:1px solid #cbd5e1;border-radius:12px;padding:.375rem .75rem;font-size:14px;background:#fff }
-    .tab:hover{ background:#f8fafc }
-    .tab.tab-active{ border-color:#c7d2fe;background:#eef2ff }
-    .kbd{ display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.2);padding:.125rem .375rem;font-size:12px }
-    .backface-hidden{ backface-visibility:hidden }
-    .input{ border:1px solid #cbd5e1;border-radius:12px;padding:.5rem .75rem }
-    .card{ background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.03) }
+    :root {
+      color-scheme: light;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px -25px rgba(15, 23, 42, 0.35);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 0.55rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #312e81, #6366f1);
+      color: #fff;
+      box-shadow: 0 14px 30px -18px rgba(79, 70, 229, 0.8);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 38px -15px rgba(79, 70, 229, 0.7);
+    }
+    .btn-secondary {
+      background: #fff;
+      color: #312e81;
+      border: 1px solid rgba(79, 70, 229, 0.25);
+    }
+    .flashcard-face {
+      min-height: 180px;
+      transition: background 180ms ease;
+    }
+    .flashcard-face[data-side="answer"] {
+      background: linear-gradient(145deg, rgba(129, 140, 248, 0.18), rgba(59, 130, 246, 0.12));
+    }
+    .quiz-option {
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 16px;
+      padding: 0.9rem 1rem;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .quiz-option:hover {
+      transform: translateY(-1px);
+      border-color: rgba(79, 70, 229, 0.55);
+    }
+    .quiz-option.correct {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.18);
+    }
+    .quiz-option.wrong {
+      border-color: #f87171;
+      background: rgba(248, 113, 113, 0.15);
+    }
+    .certificate {
+      background: linear-gradient(135deg, #f8fafc, #ede9fe);
+      border: 2px solid rgba(79, 70, 229, 0.35);
+    }
+    @media print {
+      body { background: #fff; }
+      #app { padding: 0 !important; }
+      #certificate-section { margin-top: 0 !important; }
+      #print-hint { display: none; }
+    }
   </style>
-<link rel="manifest" href="./manifest.webmanifest">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="FlashQuiz"><link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="HSB Trainer" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900">
-  <div id="root"></div>
+<body>
+  <div id="app" class="max-w-5xl mx-auto px-4 pb-24 pt-12 space-y-16">
+    <header class="text-center space-y-4">
+      <span class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1 text-indigo-700 text-sm font-medium">Profilo HSB · Colore Digitale</span>
+      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">Comprendere le dimensioni del colore</h1>
+      <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">
+        Breve percorso didattico per memorizzare le tre componenti del modello HSB (Hue, Saturation, Brightness), comprendere come influenzano la percezione cromatica e verificare le proprie conoscenze con un quiz finale certificato.
+      </p>
+    </header>
 
-  <script type="text/babel" data-presets="env,react">
-    const { useEffect, useMemo, useRef, useState } = React;
+    <section class="grid md:grid-cols-2 gap-10 items-start">
+      <article class="card p-8 space-y-4">
+        <h2 class="text-2xl font-bold">Riassunto rapido</h2>
+        <p class="text-slate-600">Il modello HSB descrive il colore attraverso tre coordinate:</p>
+        <ul class="space-y-3 text-slate-600">
+          <li><strong>Tonalità (Hue)</strong>: posizione sulla ruota dei colori, misurata in gradi da 0° a 360°; definisce quale colore percepiamo (rosso, giallo, verde...).</li>
+          <li><strong>Saturazione</strong>: purezza o intensità del colore; a 0% il colore è grigio, al 100% appare completamente puro.</li>
+          <li><strong>Luminosità (Brightness)</strong>: quantità di luce presente; controlla quanto il colore è chiaro o scuro, dal nero totale (0%) alla piena brillantezza (100%).</li>
+          <li>Combinando i valori HSB possiamo riprodurre colori coerenti su dispositivi digitali, facilitando la comunicazione tra designer e strumenti di progettazione.</li>
+        </ul>
+        <p class="text-slate-600">Nel profilo HSB le modifiche a una componente influenzano l'aspetto finale del colore mantenendo costanti le altre due, rendendo semplice isolare tonalità, purezza e luminosità.</p>
+      </article>
 
-    function App(){
-      const [decks, setDecks] = useLocalStorage('flashquiz.decks', sampleDecks());
-      const [activeDeckId, setActiveDeckId] = useLocalStorage('flashquiz.activeDeckId', decks[0]?.id || '');
-      const [view, setView] = useLocalStorage('flashquiz.view', 'study');
-      const [sessionSize, setSessionSize] = useLocalStorage('flashquiz.sessionSize', 15);
-      const [shuffle, setShuffle] = useLocalStorage('flashquiz.shuffle', true);
-      const [direction, setDirection] = useLocalStorage('flashquiz.direction', 'qa');
-      const [filters, setFilters] = useLocalStorage('flashquiz.filters', { box:'all', onlyDue:false, onlyWrong:false, onlyNew:false });
-      const [now, setNow] = useState(Date.now());
-      useEffect(()=>{ const id=setInterval(()=>setNow(Date.now()), 60_000); return ()=>clearInterval(id); },[]);
+      <div class="card p-8 space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold">Flashcard</h2>
+          <span class="text-sm text-slate-500">Card <span id="flashcard-position">1</span>/<span id="flashcard-total">1</span></span>
+        </div>
+        <div id="flashcard" class="flashcard-face card p-6 border border-indigo-100" data-side="question">
+          <p id="flashcard-content" class="text-xl font-semibold text-indigo-950"></p>
+          <p id="flashcard-caption" class="mt-4 text-sm text-slate-500"></p>
+        </div>
+        <div class="flex flex-wrap gap-3 items-center">
+          <button id="flashcard-toggle" class="btn btn-secondary">Mostra risposta</button>
+          <div class="ml-auto flex gap-2">
+            <button id="flashcard-prev" class="btn btn-secondary" aria-label="Flashcard precedente">←</button>
+            <button id="flashcard-next" class="btn btn-secondary" aria-label="Flashcard successiva">→</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      const activeDeck = useMemo(()=> decks.find(d=>d.id===activeDeckId) || decks[0], [decks, activeDeckId]);
-      useEffect(()=>{ if(activeDeck && activeDeckId!==activeDeck.id) setActiveDeckId(activeDeck.id); }, [activeDeck]);
-
-      const stats = useMemo(()=> computeDeckStats(activeDeck), [activeDeck, now]);
-
-      return (
+    <section class="card p-8 space-y-6" id="quiz-section">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <Header title="FlashQuiz" subtitle="Flashcard · Quiz · Tracciamento" />
-          <div className="max-w-6xl mx-auto px-4 pb-24 grid md:grid-cols-5 gap-6">
-            <aside className="md:col-span-2 lg:col-span-1">
-              <DeckList
-                decks={decks}
-                activeDeckId={activeDeck?.id}
-                onSelect={setActiveDeckId}
-                onCreate={(name)=>{ const nd=createDeck(name); setDecks([...decks, nd]); setActiveDeckId(nd.id); }}
-                onRename={(id,name)=> setDecks(decks.map(d=> d.id===id? {...d,name}:d))}
-                onDelete={(id)=>{ if(!confirm('Eliminare il mazzo?')) return; const nd=decks.filter(d=>d.id!==id); setDecks(nd); if(activeDeck?.id===id && nd[0]) setActiveDeckId(nd[0].id); }}
-              />
-
-              <div className="mt-6 p-4 card">
-                <h3 className="font-semibold mb-3">Impostazioni sessione</h3>
-                <label className="block text-sm mb-2">Dimensione sessione
-                  <input type="number" min="5" max="200" value={sessionSize}
-                    onChange={e=>setSessionSize(clampInt(e.target.value,5,200))}
-                    className="mt-1 w-full input" />
-                </label>
-                <div className="flex items-center gap-2 mb-2">
-                  <input id="shuffle" type="checkbox" checked={shuffle} onChange={e=>setShuffle(e.target.checked)} />
-                  <label htmlFor="shuffle">Mescola (shuffle)</label>
-                </div>
-                <label className="block text-sm mb-2">Direzione
-                  <select value={direction} onChange={e=>setDirection(e.target.value)} className="mt-1 w-full input">
-                    <option value="qa">Domanda → Risposta</option>
-                    <option value="aq">Risposta → Domanda</option>
-                  </select>
-                </label>
-
-                <h4 className="font-semibold mt-4 mb-2">Filtri</h4>
-                <label className="block text-sm mb-2">Leitner box
-                  <select value={filters.box} onChange={e=>setFilters({...filters, box:e.target.value})} className="mt-1 w-full input">
-                    <option value="all">Tutte</option>
-                    {[1,2,3,4,5].map(b=> <option key={b} value={String(b)}>{b}</option>)}
-                  </select>
-                </label>
-                <Toggle label="Solo scadute (SRS)" checked={filters.onlyDue} onChange={v=>setFilters({...filters, onlyDue:v})} />
-                <Toggle label="Solo sbagliate" checked={filters.onlyWrong} onChange={v=>setFilters({...filters, onlyWrong:v})} />
-                <Toggle label="Solo nuove" checked={filters.onlyNew} onChange={v=>setFilters({...filters, onlyNew:v})} />
-              </div>
-
-              <div className="mt-6 p-4 card">
-                <h3 className="font-semibold mb-3">Dati & Backup</h3>
-                <div className="flex gap-2">
-                  <button className="btn" onClick={()=>downloadJSON(decks, `flashquiz_backup_${new Date().toISOString().slice(0,10)}.json`)}>Esporta JSON</button>
-                  <button className="btn-secondary" onClick={()=>setView('import')}>Importa JSON</button>
-                </div>
-              </div>
-            </aside>
-
-            <main className="md:col-span-3 lg:col-span-4">
-              {activeDeck ? (
-                <div className="space-y-6">
-                  <DeckHeader deck={activeDeck} stats={stats} onViewChange={setView} view={view} />
-
-                  {view==='edit' && (
-                    <Editor deck={activeDeck} onChange={(upd)=>setDecks(decks.map(d=> d.id===activeDeck.id? upd : d))} />
-                  )}
-                  {view==='import' && (
-                    <Importer onClose={()=>setView('study')} onImport={(newDecks)=>{ setDecks(newDecks); setView('study'); }} />
-                  )}
-                  {view==='study' && (
-                    <StudySession key={activeDeck.id+JSON.stringify(filters)+sessionSize+shuffle+direction}
-                      deck={activeDeck} sessionSize={sessionSize} shuffle={shuffle} direction={direction} filters={filters}
-                      onUpdateDeck={(upd)=>setDecks(decks.map(d=> d.id===activeDeck.id? upd : d))} />
-                  )}
-                  {view==='quiz' && (
-                    <QuizSession key={activeDeck.id+JSON.stringify(filters)+sessionSize+shuffle+direction}
-                      deck={activeDeck} sessionSize={sessionSize} shuffle={shuffle} direction={direction} filters={filters}
-                      onUpdateDeck={(upd)=>setDecks(decks.map(d=> d.id===activeDeck.id? upd : d))} />
-                  )}
-                </div>
-              ) : (
-                <EmptyState onCreate={(name)=>{ const nd=createDeck(name); setDecks([nd]); setActiveDeckId(nd.id); }} />
-              )}
-            </main>
-          </div>
-          <Footer />
+          <h2 class="text-3xl font-bold">Quiz finale</h2>
+          <p class="text-slate-600">5 domande a risposta multipla per verificare la comprensione. Il tempo impiegato verrà registrato per il certificato finale.</p>
         </div>
-      );
-    }
+        <button id="start-quiz" class="btn btn-primary">Inizia quiz</button>
+      </div>
 
-    function Header({ title, subtitle }){
-      return (
-        <header className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
-          <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
+      <div id="quiz-progress" class="hidden">
+        <div class="flex justify-between text-sm text-slate-500 mb-2">
+          <span>Domanda <span id="quiz-current">1</span>/<span id="quiz-total">1</span></span>
+          <span>Tempo: <span id="quiz-timer">00:00</span></span>
+        </div>
+        <div class="w-full bg-slate-200 rounded-full h-2 mb-6">
+          <div id="quiz-bar" class="h-2 rounded-full bg-indigo-500" style="width:0"></div>
+        </div>
+        <div>
+          <h3 id="quiz-question" class="text-xl font-semibold"></h3>
+          <div id="quiz-options" class="mt-4 grid gap-3"></div>
+          <p id="quiz-feedback" class="mt-4 text-sm"></p>
+          <div class="mt-6 flex justify-end">
+            <button id="next-question" class="btn btn-primary" disabled>Domanda successiva</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="quiz-result" class="hidden space-y-3">
+        <h3 class="text-2xl font-bold">Ottimo lavoro!</h3>
+        <p class="text-slate-600">Hai completato il quiz con un punteggio di <strong><span id="result-score"></span></strong> in <strong><span id="result-time"></span></strong>.</p>
+        <p class="text-slate-600">Personalizza il tuo certificato inserendo il nome e scaricalo/stampalo per archiviarlo.</p>
+      </div>
+    </section>
+
+    <section id="certificate-section" class="hidden">
+      <div class="card certificate p-8 space-y-6">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+          <div>
+            <h2 class="text-3xl font-extrabold text-indigo-800">Certificato di completamento</h2>
+            <p class="text-sm uppercase tracking-widest text-indigo-500">Percorso didattico · HSB Trainer</p>
+          </div>
+          <img src="./icons/icon-192.png" alt="Logo" class="w-16 h-16" />
+        </div>
+        <div class="grid md:grid-cols-[2fr,1fr] gap-8 items-center">
+          <div class="space-y-4">
+            <label class="block text-sm font-medium text-slate-600">Nome e cognome del partecipante</label>
+            <input id="certificate-name" type="text" class="w-full rounded-xl border border-indigo-200 bg-white/60 px-4 py-3 text-lg" placeholder="Inserisci il tuo nome" />
+            <p class="text-lg text-slate-700">Si attesta che <span id="certificate-name-display" class="font-semibold">________________</span> ha completato il modulo “Le dimensioni del colore (Profilo HSB)” dimostrando di comprendere tonalità, saturazione e luminosità.</p>
+          </div>
+          <div class="rounded-2xl bg-white/70 border border-indigo-100 p-6 space-y-3 text-center">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-              <p className="text-white/80 text-sm">{subtitle}</p>
+              <span class="block text-sm text-slate-500">Punteggio</span>
+              <span id="certificate-score" class="text-3xl font-black text-indigo-700">0/0</span>
             </div>
-            <div className="hidden md:flex items-center gap-2">
-              <span className="kbd">Space</span>
-              <span className="text-white/80 text-sm">flip / conferma</span>
-            </div>
-          </div>
-        </header>
-      );
-    }
-    function Footer(){
-      return (
-        <footer className="border-t bg-white">
-          <div className="max-w-6xl mx-auto px-4 py-4 text-sm text-slate-600 flex flex-wrap gap-2 justify-between">
-            <div><span className="font-semibold">Scorciatoie</span>: Space · A/B/C/D · 1–5 · N</div>
-            <div>Realizzato con ❤️ per l'autoapprendimento. Dati salvati nel browser.</div>
-          </div>
-        </footer>
-      );
-    }
-
-    function DeckList({ decks, activeDeckId, onSelect, onCreate, onRename, onDelete }){
-      const [newName, setNewName] = useState('');
-      return (
-        <div className="p-4 card">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold">Mazzi</h3>
-            <button className="btn" onClick={()=>{ if(newName.trim()){ onCreate(newName.trim()); setNewName(''); } }}>+ Crea</button>
-          </div>
-          <input className="w-full input mb-3" placeholder="Nuovo mazzo..." value={newName} onChange={e=>setNewName(e.target.value)} />
-          <ul className="space-y-2">
-            {decks.map(d=> (
-              <li key={d.id} className={`group flex items-center justify-between border rounded-xl px-3 py-2 ${d.id===activeDeckId? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}>
-                <button onClick={()=>onSelect(d.id)} className="text-left flex-1">
-                  <div className="font-medium">{d.name}</div>
-                  <div className="text-xs text-slate-500">{d.cards.length} carte</div>
-                </button>
-                <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-1 ml-2">
-                  <button className="icon-btn" title="Rinomina" onClick={()=>{ const name=prompt('Nuovo nome', d.name); if(name) onRename(d.id,name); }}>✏️</button>
-                  <button className="icon-btn" title="Elimina" onClick={()=>onDelete(d.id)}>🗑️</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      );
-    }
-
-    function DeckHeader({ deck, stats, view, onViewChange }){
-      return (
-        <div className="card p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold">{deck.name}</h2>
-              <div className="text-sm text-slate-600">{deck.cards.length} carte · Accuratezza {Math.round((stats.correct/(stats.correct+stats.wrong||1))*100)}% · Studiate {stats.totalReviews} volte</div>
+              <span class="block text-sm text-slate-500">Percentuale</span>
+              <span id="certificate-percent" class="text-xl font-semibold">0%</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <button className={`tab ${view==='study' && 'tab-active'}`} onClick={()=>onViewChange('study')}>Studio</button>
-              <button className={`tab ${view==='quiz' && 'tab-active'}`} onClick={()=>onViewChange('quiz')}>Quiz</button>
-              <button className={`tab ${view==='edit' && 'tab-active'}`} onClick={()=>onViewChange('edit')}>Editor</button>
+            <div>
+              <span class="block text-sm text-slate-500">Tempo impiegato</span>
+              <span id="certificate-time" class="text-xl font-semibold">00:00</span>
+            </div>
+            <div>
+              <span class="block text-sm text-slate-500">Data</span>
+              <span id="certificate-date" class="text-lg">—</span>
             </div>
           </div>
-          <ProgressBar value={stats.progressPct} />
         </div>
-      );
-    }
-    function ProgressBar({ value }){
-      return (
-        <div className="mt-3 h-3 bg-slate-100 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600" style={{width: Math.min(100, Math.max(0, value))+'%'}}></div>
+        <div id="print-hint" class="flex flex-wrap gap-3 justify-between items-center">
+          <p class="text-sm text-slate-500">Suggerimento: compila il nome e utilizza il pulsante per stampare o salvare in PDF il certificato.</p>
+          <button id="print-certificate" class="btn btn-primary">Stampa / Salva PDF</button>
         </div>
-      );
-    }
-    function Toggle({ label, checked, onChange }){
-      return (
-        <label className="flex items-center gap-2 text-sm mb-2 select-none">
-          <input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)} />
-          <span>{label}</span>
-        </label>
-      );
-    }
-    function EmptyState({ onCreate }){
-      const [name, setName] = useState('');
-      return (
-        <div className="max-w-xl mx-auto card p-6 text-center">
-          <h2 className="text-xl font-bold mb-2">Benvenuto in FlashQuiz</h2>
-          <p className="text-slate-600 mb-4">Crea il tuo primo mazzo di flashcard per iniziare a studiare.</p>
-          <div className="flex gap-2">
-            <input className="flex-1 input" placeholder="Nome mazzo" value={name} onChange={e=>setName(e.target.value)} />
-            <button className="btn" onClick={()=> name.trim() && onCreate(name.trim())}>Crea</button>
-          </div>
-        </div>
-      );
-    }
+      </div>
+    </section>
+  </div>
 
-    function Editor({ deck, onChange }){
-      const [q, setQ] = useState('');
-      const [a, setA] = useState('');
-      const [tag, setTag] = useState('');
-      const addCard = ()=>{
-        if(!q.trim() || !a.trim()) return;
-        const card = createCard(q.trim(), a.trim(), tag.trim());
-        onChange({ ...deck, cards: [card, ...deck.cards] });
-        setQ(''); setA(''); setTag('');
-      };
-      return (
-        <div className="card p-4">
-          <h3 className="font-semibold mb-3">Editor carte</h3>
-          <div className="grid md:grid-cols-3 gap-3 mb-3">
-            <input className="input" placeholder="Domanda" value={q} onChange={e=>setQ(e.target.value)} />
-            <input className="input" placeholder="Risposta" value={a} onChange={e=>setA(e.target.value)} />
-            <input className="input" placeholder="Tag (opzionale)" value={tag} onChange={e=>setTag(e.target.value)} />
-          </div>
-          <div className="flex gap-2 mb-4">
-            <button className="btn" onClick={addCard}>+ Aggiungi</button>
-            <button className="btn-secondary" onClick={()=>{ if(confirm('Azzerare le statistiche del mazzo?')) onChange({ ...deck, cards: deck.cards.map(resetCardStats) }); }}>Azzera statistiche</button>
-          </div>
-
-          <table className="w-full text-sm">
-            <thead className="text-left text-slate-600">
-              <tr>
-                <th className="py-2">Domanda</th>
-                <th>Risposta</th>
-                <th>Tag</th>
-                <th>Box</th>
-                <th>OK/KO</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {deck.cards.map(c=>(
-                <tr key={c.id} className="border-t">
-                  <td className="py-2 pr-2"><InlineEdit value={c.q} onSave={(v)=>onChange({ ...deck, cards: deck.cards.map(x=> x.id===c.id? { ...c, q:v } : x) })} /></td>
-                  <td className="pr-2"><InlineEdit value={c.a} onSave={(v)=>onChange({ ...deck, cards: deck.cards.map(x=> x.id===c.id? { ...c, a:v } : x) })} /></td>
-                  <td className="pr-2"><InlineEdit value={c.tag||''} onSave={(v)=>onChange({ ...deck, cards: deck.cards.map(x=> x.id===c.id? { ...c, tag:v } : x) })} /></td>
-                  <td className="pr-2">{c.box}</td>
-                  <td className="pr-2">{c.correct}/{c.wrong}</td>
-                  <td className="text-right">
-                    <button className="icon-btn" title="Duplica" onClick={()=>onChange({ ...deck, cards: [{...c, id:uid()}, ...deck.cards] })}>🗂️</button>
-                    <button className="icon-btn" title="Elimina" onClick={()=>onChange({ ...deck, cards: deck.cards.filter(x=>x.id!==c.id) })}>🗑️</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-    }
-    function InlineEdit({ value, onSave }){
-      const [editing, setEditing] = useState(false);
-      const [val, setVal] = useState(value);
-      useEffect(()=>setVal(value), [value]);
-      if(!editing) return <button className="text-left w-full" onClick={()=>setEditing(true)}>{value}</button>;
-      return <input className="w-full input" value={val} autoFocus onBlur={()=>{ setEditing(false); if(val!==value) onSave(val); }} onChange={e=>setVal(e.target.value)} />
-    }
-
-    function StudySession({ deck, sessionSize, shuffle, direction, filters, onUpdateDeck }){
-      const pool = useMemo(()=> makeStudyPool(deck.cards, { sessionSize, shuffle, filters }), [deck.cards, sessionSize, shuffle, filters]);
-      const [idx, setIdx] = useState(0);
-      const [flipped, setFlipped] = useState(false);
-      const current = pool[idx];
-
-      useHotkeys({ Space: ()=> flipped ? grade(3) : setFlipped(true), N: ()=> next(), '1':()=>grade(1), '2':()=>grade(2), '3':()=>grade(3), '4':()=>grade(4), '5':()=>grade(5) });
-
-      function grade(score){
-        const isCorrect = score>=3;
-        const updated = applyReview(deck, current.id, { isCorrect, score, direction });
-        onUpdateDeck(updated);
-        setFlipped(false);
-        next();
+  <script>
+    const flashcards = [
+      {
+        question: 'Che cosa rappresenta la tonalità (Hue)?',
+        answer: 'La posizione del colore sulla ruota cromatica, espressa in gradi da 0° a 360° (rosso, giallo, verde, ecc.).',
+        caption: 'Dimensione qualitativa: identifica quale colore percepiamo.'
+      },
+      {
+        question: 'Come si interpreta la saturazione nel modello HSB?',
+        answer: 'Misura la purezza del colore: 0% equivale a un grigio neutro, 100% a un colore pieno e intenso.',
+        caption: 'Dimensione quantitativa: controlla quanto il colore è diluito.'
+      },
+      {
+        question: 'Che ruolo ha la luminosità (Brightness)?',
+        answer: 'Determina quanta luce contiene il colore, passando dal nero (0%) alla massima brillantezza (100%).',
+        caption: 'Dimensione energetica: regola la percezione di luce e ombra.'
+      },
+      {
+        question: 'Perché il modello HSB è utile ai designer?',
+        answer: 'Permette di regolare separatamente tonalità, purezza e luminosità mantenendo un linguaggio intuitivo condiviso con i software di grafica.',
+        caption: 'Favorisce coerenza e comunicazione nel lavoro digitale.'
+      },
+      {
+        question: 'Qual è la relazione tra HSB e variazioni cromatiche?',
+        answer: 'Modificando una sola componente (H, S o B) si osservano cambiamenti controllati nell’aspetto del colore, mantenendo costanti le altre due.',
+        caption: 'Ogni dimensione agisce su un parametro percettivo specifico.'
       }
-      function next(){ setIdx(x=> Math.min(pool.length-1, x+1)); }
+    ];
 
-      if(!current) return <SessionEmpty />;
+    const quizQuestions = [
+      {
+        question: 'Quale componente HSB indica la “qualità” del colore (es. rosso, verde, blu)?',
+        options: ['Saturazione', 'Luminosità', 'Tonalità', 'Contrasto'],
+        correct: 2,
+        feedback: 'La tonalità (Hue) identifica quale colore stiamo osservando sulla ruota cromatica.'
+      },
+      {
+        question: 'Cosa accade a un colore con saturazione 0%?',
+        options: ['Diventa nero', 'Diventa completamente grigio', 'Raddoppia la luminosità', 'Cambia tonalità casualmente'],
+        correct: 1,
+        feedback: 'A saturazione nulla resta solo la luminosità: il colore appare come una sfumatura di grigio.'
+      },
+      {
+        question: 'Quale valore di luminosità corrisponde alla massima brillantezza possibile?',
+        options: ['0%', '25%', '50%', '100%'],
+        correct: 3,
+        feedback: 'Con luminosità al 100% il colore raggiunge la massima intensità luminosa.'
+      },
+      {
+        question: 'Perché il profilo HSB è considerato intuitivo per i progettisti?',
+        options: ['Perché usa solo numeri binari', 'Perché separa tonalità, saturazione e luminosità in parametri indipendenti', 'Perché elimina la necessità di misurare i colori', 'Perché è incompatibile con gli strumenti digitali'],
+        correct: 1,
+        feedback: 'Ogni dimensione HSB regola un aspetto specifico del colore, semplificando modifiche mirate.'
+      },
+      {
+        question: 'Se aumentiamo solo la tonalità di un colore, cosa rimane invariato?',
+        options: ['La purezza e la luminosità', 'La purezza ma non la luminosità', 'La luminosità ma non la purezza', 'Nulla, cambiano tutte le componenti'],
+        correct: 0,
+        feedback: 'Agendo solo sulla tonalità cambiamo il colore percepito mantenendo costanti saturazione e luminosità.'
+      }
+    ];
 
-      return (
-        <div>
-          <SessionHeader current={idx+1} total={pool.length} deck={deck} mode="studio" />
-          <div className="mt-4 grid md:grid-cols-2 gap-6">
-            <CardFlip front={direction==='qa'? current.q : current.a} back={direction==='qa'? current.a : current.q} flipped={flipped} tag={current.tag} onFlip={()=>setFlipped(v=>!v)} />
-            <div className="card p-4">
-              <h4 className="font-semibold mb-2">Valuta la risposta</h4>
-              <div className="grid grid-cols-5 gap-2">{[1,2,3,4,5].map(n=> <button key={n} className="btn" onClick={()=>grade(n)}>{n}</button>)}</div>
-              <p className="text-sm text-slate-600 mt-3">1-2: errore · 3: ok · 4: buono · 5: perfetto</p>
-              <button className="btn-secondary mt-4" onClick={()=>setFlipped(true)}>Mostra risposta (Space)</button>
-            </div>
-          </div>
-        </div>
-      );
+    // Flashcard logic
+    const flashcardContent = document.getElementById('flashcard-content');
+    const flashcardCaption = document.getElementById('flashcard-caption');
+    const flashcardElement = document.getElementById('flashcard');
+    const positionEl = document.getElementById('flashcard-position');
+    const totalEl = document.getElementById('flashcard-total');
+    const toggleButton = document.getElementById('flashcard-toggle');
+    const prevButton = document.getElementById('flashcard-prev');
+    const nextButton = document.getElementById('flashcard-next');
+
+    let currentCard = 0;
+    let showingAnswer = false;
+    totalEl.textContent = flashcards.length;
+
+    function renderFlashcard() {
+      const card = flashcards[currentCard];
+      flashcardElement.dataset.side = showingAnswer ? 'answer' : 'question';
+      flashcardContent.textContent = showingAnswer ? card.answer : card.question;
+      flashcardCaption.textContent = showingAnswer ? '' : card.caption;
+      toggleButton.textContent = showingAnswer ? 'Mostra domanda' : 'Mostra risposta';
+      positionEl.textContent = currentCard + 1;
     }
 
-    function CardFlip({ front, back, flipped, onFlip, tag }){
-      return (
-        <div className="card p-6 select-none">
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-xs uppercase tracking-wide text-slate-500">Flashcard</div>
-            {tag && <span className="text-xs bg-slate-100 rounded-full px-2 py-1">#{tag}</span>}
-          </div>
-          <div className="relative h-48 md:h-60">
-            <div className={`absolute inset-0 transition-transform duration-300 [transform-style:preserve-3d] ${flipped? '[transform:rotateY(180deg)]':''}`} onClick={onFlip}>
-              <div className="absolute inset-0 grid place-items-center backface-hidden">
-                <div className="text-xl md:text-2xl font-semibold text-center px-4">{front}</div>
-              </div>
-              <div className="absolute inset-0 grid place-items-center [transform:rotateY(180deg)] backface-hidden bg-slate-50 rounded-xl border">
-                <div className="text-xl md:text-2xl font-semibold text-center px-4">{back}</div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 text-center"><button className="btn-secondary" onClick={onFlip}>Flip (Space)</button></div>
-        </div>
-      );
-    }
-    function SessionHeader({ current, total, deck, mode }){
-      return (
-        <div className="card p-4 flex items-center justify-between">
-          <div className="text-sm text-slate-700">{deck.name} · {mode==='studio'? 'Studio' : 'Quiz'}</div>
-          <div className="text-sm">{current} / {total}</div>
-        </div>
-      );
-    }
-    function SessionEmpty(){
-      return (
-        <div className="card p-6 text-center">
-          <h3 className="font-semibold">Nessuna carta corrisponde ai filtri / sessione.</h3>
-          <p className="text-slate-600">Riduci i filtri, aumenta la dimensione della sessione o aggiungi nuove carte.</p>
-        </div>
-      );
-    }
+    toggleButton.addEventListener('click', () => {
+      showingAnswer = !showingAnswer;
+      renderFlashcard();
+    });
 
-    function QuizSession({ deck, sessionSize, shuffle, direction, filters, onUpdateDeck }){
-      const pool = useMemo(()=> makeStudyPool(deck.cards, { sessionSize, shuffle, filters }), [deck.cards, sessionSize, shuffle, filters]);
-      const [idx, setIdx] = useState(0);
-      const [selected, setSelected] = useState(null);
-      const current = pool[idx];
-      const options = useMemo(()=> makeOptions(deck.cards, current, direction), [deck.cards, current, direction]);
+    prevButton.addEventListener('click', () => {
+      currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
+      showingAnswer = false;
+      renderFlashcard();
+    });
 
-      useHotkeys({ A:()=>choose(0), B:()=>choose(1), C:()=>choose(2), D:()=>choose(3), N:()=>next(), Space:()=> selected===null? null : next() });
-      function choose(i){ if(selected!==null) return; setSelected(i); }
-      function next(){ setSelected(null); setIdx(x=> Math.min(pool.length-1, x+1)); }
+    nextButton.addEventListener('click', () => {
+      currentCard = (currentCard + 1) % flashcards.length;
+      showingAnswer = false;
+      renderFlashcard();
+    });
 
-      if(!current) return <SessionEmpty />;
+    renderFlashcard();
 
-      const correctIndex = options.findIndex(o=>o.correct);
-      const question = direction==='qa'? current.q : current.a;
-      const answered = selected!==null;
-      const isCorrect = answered && selected===correctIndex;
+    // Quiz logic
+    const startQuizButton = document.getElementById('start-quiz');
+    const quizProgress = document.getElementById('quiz-progress');
+    const quizCurrent = document.getElementById('quiz-current');
+    const quizTotal = document.getElementById('quiz-total');
+    const quizTimer = document.getElementById('quiz-timer');
+    const quizBar = document.getElementById('quiz-bar');
+    const quizQuestion = document.getElementById('quiz-question');
+    const quizOptions = document.getElementById('quiz-options');
+    const quizFeedback = document.getElementById('quiz-feedback');
+    const nextQuestionButton = document.getElementById('next-question');
+    const quizResult = document.getElementById('quiz-result');
+    const resultScore = document.getElementById('result-score');
+    const resultTime = document.getElementById('result-time');
 
-      useEffect(()=>{ if(!answered) return; const updated=applyReview(deck, current.id, { isCorrect, score:isCorrect?4:2, direction }); onUpdateDeck(updated); }, [answered]);
+    let quizState = {
+      index: 0,
+      correct: 0,
+      started: false,
+      startTime: null,
+      timerInterval: null,
+      locked: false,
+      elapsed: 0
+    };
 
-      return (
-        <div>
-          <SessionHeader current={idx+1} total={pool.length} deck={deck} mode="quiz" />
-          <div className="card p-6 mt-4">
-            <div className="text-sm uppercase tracking-wide text-slate-500 mb-2">Domanda</div>
-            <div className="text-xl md:text-2xl font-semibold mb-4">{question}</div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {options.map((o,i)=>(
-                <button key={i} className={`rounded-xl border px-4 py-3 text-left transition ${ answered ? (i===correctIndex? 'bg-emerald-50 border-emerald-300' : i===selected? 'bg-rose-50 border-rose-300' : '') : 'hover:bg-slate-50'}`} onClick={()=>choose(i)}>
-                  <div className="text-sm font-mono text-slate-500">{String.fromCharCode(65+i)}</div>
-                  <div className="font-medium">{o.text}</div>
-                </button>
-              ))}
-            </div>
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-slate-600">{answered ? (isCorrect? 'Corretto!' : `Risposta corretta: ${options[correctIndex].text}`) : 'Scegli un\\'opzione.'}</div>
-              <button className="btn" onClick={next} disabled={!answered}>Prossima (N/Space)</button>
-            </div>
-          </div>
-        </div>
-      );
+    quizTotal.textContent = quizQuestions.length;
+
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+      const seconds = String(totalSeconds % 60).padStart(2, '0');
+      return `${minutes}:${seconds}`;
     }
 
-    // logic
-    function makeOptions(allCards, current, direction){
-      if(!current) return [];
-      const correctText = direction==='qa'? current.a : current.q;
-      const pool = allCards.filter(c=> c.id!==current.id);
-      shuffleInPlace(pool);
-      const distractors = pool.slice(0,3).map(c=> direction==='qa'? c.a : c.q);
-      const opts = [{ text:correctText, correct:true }, ...distractors.map(t=>({ text:t, correct:false }))];
-      shuffleInPlace(opts);
-      return opts;
-    }
-    function createDeck(name){ return { id:uid(), name, createdAt:Date.now(), cards:[] }; }
-    function createCard(q,a,tag){ return { id:uid(), q, a, tag: tag||null, createdAt:Date.now(), box:1, correct:0, wrong:0, streak:0, lastSeen:0, nextDue:Date.now() }; }
-    function resetCardStats(c){ return { ...c, box:1, correct:0, wrong:0, streak:0, lastSeen:0, nextDue:Date.now() }; }
-    function computeDeckStats(deck){ if(!deck) return {progressPct:0, correct:0, wrong:0, totalReviews:0}; const totalReviews=deck.cards.reduce((s,c)=> s+c.correct+c.wrong,0); const mastered=deck.cards.filter(c=>c.box>=5).length; const progressPct=deck.cards.length? (mastered/deck.cards.length)*100 : 0; const correct=deck.cards.reduce((s,c)=>s+c.correct,0); const wrong=deck.cards.reduce((s,c)=>s+c.wrong,0); return { progressPct, totalReviews, correct, wrong }; }
-    function makeStudyPool(cards, { sessionSize, shuffle, filters }){ let pool=[...cards]; if(filters.box!=='all') pool=pool.filter(c=> String(c.box)===filters.box); if(filters.onlyWrong) pool=pool.filter(c=> c.wrong>0); if(filters.onlyNew) pool=pool.filter(c=> (c.correct+c.wrong)===0); if(filters.onlyDue) pool=pool.filter(c=> c.nextDue<=Date.now()); if(shuffle) shuffleInPlace(pool); return pool.slice(0, sessionSize); }
-    function applyReview(deck, cardId, { isCorrect, score, direction }){ const now=Date.now(); const nextCards = deck.cards.map(c=>{ if(c.id!==cardId) return c; let box=c.box; const streak=isCorrect? c.streak+1 : 0; box = isCorrect? Math.min(5, box+1) : Math.max(1, box-1); const intervals = { 1: 8*60, 2: 1*24*60, 3: 3*24*60, 4: 7*24*60, 5: 21*24*60 }; const nextDue = now + (intervals[box]||60)*60*1000; return { ...c, box, streak, correct:c.correct+(isCorrect?1:0), wrong:c.wrong+(isCorrect?0:1), lastSeen:now, lastDirection:direction, nextDue }; }); return { ...deck, cards: nextCards } }
-
-    // utils
-    function uid(){ return Math.random().toString(36).slice(2,9) }
-    function clampInt(v,min,max){ const n=parseInt(v||min,10); return isNaN(n)? min : Math.min(max, Math.max(min,n)); }
-    function shuffleInPlace(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
-    function downloadJSON(data, filename){ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); }
-    function useLocalStorage(key, initial){ const [state, setState] = useState(()=>{ try{ const raw=localStorage.getItem(key); return raw? JSON.parse(raw): (typeof initial==='function'? initial(): initial); }catch{ return typeof initial==='function'? initial(): initial } }); useEffect(()=>{ try{ localStorage.setItem(key, JSON.stringify(state)); }catch{} }, [key, state]); return [state, setState]; }
-    function useHotkeys(map){ const mapRef=useRef(map); mapRef.current=map; useEffect(()=>{ const fn=e=>{ const k=e.key.toUpperCase(); for(const key of Object.keys(mapRef.current)){ if(k===key.toUpperCase()){ e.preventDefault(); mapRef.current[key](); break; } } }; window.addEventListener('keydown', fn); return ()=> window.removeEventListener('keydown', fn); },[]); }
-
-    function Importer({ onImport, onClose }){
-      const [text, setText] = useState('');
-      const [error, setError] = useState('');
-      return (
-        <div className="card p-4">
-          <h3 className="font-semibold mb-2">Importa JSON</h3>
-          <p className="text-sm text-slate-600 mb-3">Incolla un backup esportato in precedenza o un array di mazzi compatibile.</p>
-          <textarea className="w-full h-48 input font-mono" value={text} onChange={e=>setText(e.target.value)} placeholder="[ { id, name, cards:[...] }, ... ]" />
-          {error && <div className="text-rose-600 text-sm mt-2">{error}</div>}
-          <div className="mt-3 flex gap-2">
-            <button className="btn" onClick={()=>{ try{ const data=JSON.parse(text); if(!Array.isArray(data)) throw new Error('Formato non valido (atteso array)'); const fixed=data.map(d=> ({ ...d, id:d.id||uid(), cards:(d.cards||[]).map(c=>({ box:1, correct:0, wrong:0, streak:0, lastSeen:0, nextDue:Date.now(), ...c, id:c.id||uid() })) })); onImport(fixed); }catch(err){ setError(String(err.message||err)); } }}>Importa</button>
-            <button className="btn-secondary" onClick={onClose}>Annulla</button>
-          </div>
-        </div>
-      );
+    function updateTimer() {
+      const now = Date.now();
+      quizState.elapsed = now - quizState.startTime;
+      quizTimer.textContent = formatTime(quizState.elapsed);
     }
 
-    function sampleDecks(){
-      const d1 = { id:uid(), name:'Fondamenti di Statistica', createdAt:Date.now(), cards:[
-        createCard('Che cos\\'è la media aritmetica?', 'Somma dei valori / numero delle osservazioni', 'base'),
-        createCard('Definisci mediana', 'Il valore centrale dei dati ordinati', 'base'),
-        createCard('Varianza: definizione', 'Media dei quadrati degli scarti dalla media', 'dispersione'),
-        createCard('Moda: definizione', 'Valore più frequente', 'base'),
-        createCard('Che cos\\'è un outlier?', 'Osservazione anomala distante dal bulk dei dati', 'qualità'),
-        createCard('Teorema LLN', 'La media campionaria converge a quella della popolazione', 'teoria'),
-      ]};
-      const d2 = { id:uid(), name:'Inglese · Phrasal Verbs', createdAt:Date.now(), cards:[
-        createCard('to give up', 'smettere/arrendersi', 'A1'),
-        createCard('to look after', 'prendersi cura', 'A2'),
-        createCard('to run into', 'incontrare per caso', 'B1'),
-        createCard('to put off', 'rimandare', 'B1'),
-      ]};
-      return [d1,d2];
+    function startQuiz() {
+      quizState = {
+        index: 0,
+        correct: 0,
+        started: true,
+        startTime: Date.now(),
+        timerInterval: setInterval(updateTimer, 500),
+        locked: false,
+        elapsed: 0
+      };
+      startQuizButton.classList.add('hidden');
+      quizProgress.classList.remove('hidden');
+      quizResult.classList.add('hidden');
+      document.getElementById('certificate-section').classList.add('hidden');
+      updateTimer();
+      renderQuestion();
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+    function renderQuestion() {
+      const data = quizQuestions[quizState.index];
+      quizCurrent.textContent = quizState.index + 1;
+      quizQuestion.textContent = data.question;
+      quizFeedback.textContent = '';
+      quizFeedback.className = 'mt-4 text-sm text-slate-600';
+      nextQuestionButton.disabled = true;
+      nextQuestionButton.textContent = quizState.index === quizQuestions.length - 1 ? 'Concludi quiz' : 'Domanda successiva';
+      quizOptions.innerHTML = '';
+      quizBar.style.width = `${(quizState.index / quizQuestions.length) * 100}%`;
+      quizState.locked = false;
+
+      data.options.forEach((option, idx) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'quiz-option text-left';
+        button.innerHTML = `<span class="font-semibold mr-2">${String.fromCharCode(65 + idx)}.</span> ${option}`;
+        button.addEventListener('click', () => handleAnswer(button, idx));
+        quizOptions.appendChild(button);
+      });
+    }
+
+    function handleAnswer(button, selected) {
+      if (quizState.locked) return;
+      const data = quizQuestions[quizState.index];
+      quizState.locked = true;
+      const buttons = Array.from(quizOptions.querySelectorAll('button'));
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === data.correct) {
+          btn.classList.add('correct');
+        }
+        if (idx === selected && idx !== data.correct) {
+          btn.classList.add('wrong');
+        }
+      });
+      if (selected === data.correct) {
+        quizState.correct += 1;
+        quizFeedback.textContent = 'Corretto! ' + data.feedback;
+        quizFeedback.className = 'mt-4 text-sm text-emerald-600 font-medium';
+      } else {
+        quizFeedback.textContent = 'Risposta errata. ' + data.feedback;
+        quizFeedback.className = 'mt-4 text-sm text-rose-600 font-medium';
+      }
+      nextQuestionButton.disabled = false;
+      quizBar.style.width = `${((quizState.index + 1) / quizQuestions.length) * 100}%`;
+    }
+
+    function finishQuiz() {
+      clearInterval(quizState.timerInterval);
+      updateTimer();
+      const finalTime = quizState.elapsed;
+      const scoreText = `${quizState.correct}/${quizQuestions.length}`;
+      resultScore.textContent = scoreText;
+      resultTime.textContent = formatTime(finalTime);
+      quizResult.classList.remove('hidden');
+      startQuizButton.textContent = 'Ricomincia';
+      startQuizButton.classList.remove('hidden');
+      renderCertificate({
+        scoreText,
+        correct: quizState.correct,
+        total: quizQuestions.length,
+        time: finalTime
+      });
+    }
+
+    nextQuestionButton.addEventListener('click', () => {
+      if (quizState.index < quizQuestions.length - 1) {
+        quizState.index += 1;
+        renderQuestion();
+      } else {
+        finishQuiz();
+      }
+    });
+
+    startQuizButton.addEventListener('click', startQuiz);
+
+    // Certificate logic
+    const certificateSection = document.getElementById('certificate-section');
+    const certificateName = document.getElementById('certificate-name');
+    const certificateNameDisplay = document.getElementById('certificate-name-display');
+    const certificateScore = document.getElementById('certificate-score');
+    const certificatePercent = document.getElementById('certificate-percent');
+    const certificateTime = document.getElementById('certificate-time');
+    const certificateDate = document.getElementById('certificate-date');
+    const printCertificateButton = document.getElementById('print-certificate');
+
+    function renderCertificate({ scoreText, correct, total, time }) {
+      certificateSection.classList.remove('hidden');
+      certificateScore.textContent = scoreText;
+      const percent = Math.round((correct / total) * 100);
+      certificatePercent.textContent = `${percent}%`;
+      certificateTime.textContent = formatTime(time);
+      certificateDate.textContent = new Date().toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' });
+      updateCertificateName();
+    }
+
+    function updateCertificateName() {
+      const value = certificateName.value.trim();
+      certificateNameDisplay.textContent = value.length ? value : '________________';
+    }
+
+    certificateName.addEventListener('input', updateCertificateName);
+
+    printCertificateButton.addEventListener('click', () => {
+      window.print();
+    });
+
+    // Initialize certificate date for preview
+    certificateDate.textContent = new Date().toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' });
   </script>
 
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    const swPath = './sw.js';
-    navigator.serviceWorker.register(swPath).catch(console.error);
-  });
-}
-</script>
-
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(console.error);
+    });
+  }
+  </script>
 </body>
 </html>
